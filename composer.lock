@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "317ab76dc45c8479311818b0b17efe74",
+    "hash": "f024dff36d839e267f64ebea9acf7800",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -241,12 +241,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/openclerk/accounts.git",
-                "reference": "6f21e9df2fad9a153587d7e84c7c9125d267dc26"
+                "reference": "44a864bd255ff35c1c8a9a02fd6c69fc3cd03851"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/openclerk/accounts/zipball/6f21e9df2fad9a153587d7e84c7c9125d267dc26",
-                "reference": "6f21e9df2fad9a153587d7e84c7c9125d267dc26",
+                "url": "https://api.github.com/repos/openclerk/accounts/zipball/44a864bd255ff35c1c8a9a02fd6c69fc3cd03851",
+                "reference": "44a864bd255ff35c1c8a9a02fd6c69fc3cd03851",
                 "shasum": ""
             },
             "require": {
@@ -266,7 +266,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "description": "Definitions and implementations of accounts in Openclerk",
-            "time": "2015-04-09 02:59:22"
+            "time": "2015-04-09 06:08:01"
         },
         {
             "name": "openclerk/apis",
@@ -303,16 +303,16 @@
         },
         {
             "name": "openclerk/coinbase-oauth2",
-            "version": "dev-master",
+            "version": "0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/openclerk/coinbase-oauth2.git",
-                "reference": "bd23742d6070bd89bfe67b299f50b040a6750abd"
+                "reference": "e49963892100e344928e8950e9a49bd376b6cce8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/openclerk/coinbase-oauth2/zipball/bd23742d6070bd89bfe67b299f50b040a6750abd",
-                "reference": "bd23742d6070bd89bfe67b299f50b040a6750abd",
+                "url": "https://api.github.com/repos/openclerk/coinbase-oauth2/zipball/e49963892100e344928e8950e9a49bd376b6cce8",
+                "reference": "e49963892100e344928e8950e9a49bd376b6cce8",
                 "shasum": ""
             },
             "require": {
@@ -328,12 +328,9 @@
                     "Openclerk\\OAuth2\\Client\\Test\\": "src"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "description": "Coinbase Provider for the OAuth 2.0 Client",
-            "support": {
-                "source": "https://github.com/openclerk/coinbase-oauth2/tree/master",
-                "issues": "https://github.com/openclerk/coinbase-oauth2/issues"
-            },
-            "time": "2015-04-09 04:29:22"
+            "time": "2015-04-09 06:25:04"
         },
         {
             "name": "openclerk/config",
@@ -1253,7 +1250,6 @@
         "openclerk/apis": 20,
         "openclerk/config": 20,
         "openclerk/currencies": 20,
-        "openclerk/coinbase-oauth2": 20,
         "soundasleep/component-tests": 20,
         "openclerk/cryptocurrencies": 20
     },
