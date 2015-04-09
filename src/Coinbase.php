@@ -23,17 +23,20 @@ use \Openclerk\OAuth2\Client\Provider\Coinbase as CoinbaseProvider;
 class Coinbase extends AbstractWallet implements SelfUpdatingAccount, UserInteractionAccount {
 
   public function getName() {
-    return "Coinbase New";
+    return "Coinbase";
   }
 
   function getCode() {
-    return "coinbase_new";
+    return "coinbase";
   }
 
   function getURL() {
     return "https://www.coinbase.com";
   }
 
+  /**
+   * These fields can be filled in with {@link UserInteractionAccount}.
+   */
   public function getFields() {
     return array(
       'api_code' => array(
@@ -111,9 +114,7 @@ class Coinbase extends AbstractWallet implements SelfUpdatingAccount, UserIntera
   }
 
   public function fetchSupportedCurrencies(CurrencyFactory $factory, Logger $logger) {
-    throw new AccountFetchException("Not implemented yet");
-    // there is no public API to list supported currencies
-    return array('btc', 'nzd');
+    return array('btc');
   }
 
   public function createProvider() {
