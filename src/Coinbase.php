@@ -6,46 +6,16 @@ use \Monolog\Logger;
 use \Account\Account;
 use \Account\DisabledAccount;
 use \Account\SimpleAccountType;
+use \Account\SelfUpdatingAccount;
+use \Account\UserInteractionAccount;
 use \Account\AccountFetchException;
 use \Apis\FetchHttpException;
 use \Apis\FetchException;
 use \Apis\Fetch;
 use \Openclerk\Currencies\CurrencyFactory;
+use \Openclerk\Config;
 
 use \Openclerk\OAuth2\Client\Provider\Coinbase as CoinbaseProvider;
-
-/**
- * Represents an {@link AccountType} that requires some sort of self-updating
- * mechanism with the account data.
- *
- * This is necessary for e.g. OAuth2 updating access_tokens, refresh_tokens
- */
-interface SelfUpdatingAccount {
-  /**
-   * When we have finished with this account, register this callback
-   * that will update the account data with the given new data.
-   *
-   * This is necessary for e.g. OAuth2 updating access_tokens, refresh_tokens
-   */
-  function registerAccountUpdateCallback($callback);
-}
-
-/**
- * Represents an {@link AccountType} that allows fields to <i>instead</i> be
- * populated by doing something with the user.
- */
-interface UserInteractionAccount {
-
-  /**
-   * Prepare the user agent to redirect, etc.
-   * If user interaction is complete, instead returns an array of valid field values.
-   *
-   * @return either {@code null} (interaction is not yet complete) or an array of valid field values
-   * @throws AccountFetchException if something bad happened
-   */
-  function interaction(Logger $logger);
-
-}
 
 /**
  * Represents the Coinbase exchange wallet.
@@ -53,11 +23,11 @@ interface UserInteractionAccount {
 class Coinbase extends AbstractWallet implements SelfUpdatingAccount, UserInteractionAccount {
 
   public function getName() {
-    return "Coinbase";
+    return "Coinbase New";
   }
 
   function getCode() {
-    return "coinbase";
+    return "coinbase_new";
   }
 
   function getURL() {
@@ -69,25 +39,24 @@ class Coinbase extends AbstractWallet implements SelfUpdatingAccount, UserIntera
       'api_code' => array(
         'title' => "API Code",
         'regexp' => '#.+#',
+        'interaction' => true,
       ),
       'refresh_token' => array(
         'title' => "Refresh Token",
         'regexp' => '#.+#',
+        'interaction' => true,
       ),
       'access_token' => array(
         'title' => "Access Token",
         'regexp' => '#.+#',
+        'interaction' => true,
       ),
       'access_token_expires' => array(
         'title' => "Access Token Expires",
+        'interaction' => true,
+        'type' => 'datetime',
       ),
     );
-  }
-
-  var $interaction_balance_callback = null;
-
-  function interactionBalanceCallback($fields, Logger $logger) {
-    $this->interaction_balance_callback = $fields;
   }
 
   function interaction(Logger $logger) {
@@ -118,19 +87,20 @@ class Coinbase extends AbstractWallet implements SelfUpdatingAccount, UserIntera
         'api_code' => $_GET['code'],
       );
 
-      $this->registerAccountUpdateCallback(array($this, 'interactionBalanceCallback'));
-
       // fetch balances
-      $logger->info("Discovering initial access token");
-      $ignored = $this->fetchBalances($account, null, $logger);
+      $logger->info("Using authorization_code to load initial access token");
+      $provider = $this->createProvider();
 
-      // now return the valid fields
-      $account = array_merge($account, $this->interaction_balance_callback);
+      $token = $provider->getAccessToken('authorization_code', array(
+        'code' => $account['api_code'],
+      ));
 
-      // unregister callback
-      $this->registerAccountUpdateCallback(null);
-
-      return $account;
+      return array(
+        'api_code' => $account['api_code'],
+        'access_token' => $token->accessToken,
+        'access_token_expires' => date('Y-m-d H:i:s', $token->expires),   // Coinbase returns time, not seconds until
+        'refresh_token' => $token->refreshToken,
+      );
     }
   }
 
@@ -151,7 +121,7 @@ class Coinbase extends AbstractWallet implements SelfUpdatingAccount, UserIntera
       'clientId' => Config::get('coinbase_client_id'),
       'clientSecret' => Config::get('coinbase_client_secret'),
       'redirectUri' => Config::get('coinbase_redirect_uri'),
-      // 'scopes'        => ['email', '...', '...'],
+      'scopes' => array('user', 'balance'),       // we don't really want 'user' but the oauth2-client requires it
     ));
   }
 
@@ -166,7 +136,8 @@ class Coinbase extends AbstractWallet implements SelfUpdatingAccount, UserIntera
     }
 
     // we should have an API code by now
-    $need_refresh = time() >= strtotime($account['access_token_expires']);
+    // we'll just always request new access tokens on every request, to reduce errors
+    $need_refresh = true; // time() >= strtotime($account['access_token_expires']);
     $update_account = false;
 
     if ($need_refresh) {
@@ -183,24 +154,32 @@ class Coinbase extends AbstractWallet implements SelfUpdatingAccount, UserIntera
       $provider = $this->createProvider();
 
       $token = $provider->getAccessToken('authorization_code', array(
-        'authorization_code' => $account['api_code'],
+        'code' => $account['api_code'],
       ));
 
     }
 
     $update_account = array(
       'access_token' => $token->accessToken,
-      'access_token_expires' => time() + $token->expires,
+      'access_token_expires' => date('Y-m-d H:i:s', $token->expires),   // Coinbase returns time, not seconds until
       'refresh_token' => $token->refreshToken,
     );
     $access_token = $token->accessToken;
 
-    // get user details
-    $user = $provider->getUserDetails($token);
-    print_r($user);
-    die;
+    // update account details
+    $logger->info("Self-updating account");
+    call_user_func($this->account_update_callback, $update_account);
 
-    // TODO
+    // get balance details
+    $logger->info("Fetching balance details");
+    $balance = $provider->getBalanceDetails($token);
+
+    $result = array();
+    $result[strtolower($balance['currency'])] = array(
+      'confirmed' => $balance['amount'],
+    );
+
+    return $result;
 
   }
 
