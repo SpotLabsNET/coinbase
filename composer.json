@@ -1,0 +1,27 @@
+{
+  "name": "openclerk/coinbase",
+  "description": "Definitions and implementations of Coinbase wallets in Openclerk",
+  "autoload": {
+    "psr-4": {
+      "Account\\Wallet\\": "src",
+      "Account\\Wallet\\Tests\\": "test"
+    }
+  },
+  "require": {
+    "openclerk/accounts": "dev-master",
+    "openclerk/apis": "dev-master",
+    "openclerk/config": "dev-master",
+    "openclerk/currencies": "dev-master",
+    "openclerk/coinbase-oauth2": "dev-master",
+    "monolog/monolog": "~1.11",
+    "league/oauth2-client": "0.10.*"
+  },
+  "require-dev": {
+    "soundasleep/component-tests": "dev-master",
+    "openclerk/cryptocurrencies": "dev-master"
+  },
+  "repositories": [{
+    "type": "vcs",
+    "url": "https://github.com/openclerk/coinbase-oauth2"
+  }]
+}
